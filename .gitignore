@@ -1,0 +1,14 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# py4web internal service files
+apps/.service/
+
+# py4web databases (generated from models)
+apps/**/databases/*
+!apps/**/databases/.gitkeep  # keep empty folder if needed
+*.log
+*.sqlite
+*.db
+venv/

@@ -1,0 +1,43 @@
+[[extend 'layout.html']]
+
+<div class="section" id="ingredient-app">
+  <div class="container">
+    <h1 class="title is-3">Ingredients</h1>
+
+    <!-- Search -->
+    <div class="field mb-5">
+      <div class="control">
+        <input
+          v-model="search"
+          @input="loadIngredients"
+          class="input is-medium"
+          placeholder="Search ingredients…"
+        />
+      </div>
+    </div>
+
+    <!-- Ingredient List -->
+    <div class="box" v-for="i in ingredients" :key="i.id">
+      <div class="is-flex is-justify-content-space-between is-align-items-center">
+        <div>
+          <strong>{{ i.name }}</strong>
+          <em>({{ i.unit }})</em> —
+          <span class="tag is-info is-light">{{ i.calories_per_unit }} cal/unit</span>
+          <p class="is-size-7 mt-1">{{ i.description }}</p>
+        </div>
+        <button @click="deleteIngredient(i.id)" class="button is-danger is-small ml-3">Delete</button>
+      </div>
+    </div>
+
+    <!-- Link to Post Page -->
+    <div class="has-text-centered mt-6">
+      <a href="/Recipe_Manager/post" class="button is-link">Add New Ingredient</a>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+<script>
+  window.api_base = "[[=api_base]]";
+</script>
+<script src="/Recipe_Manager/static/js/ingredients.js" defer></script>

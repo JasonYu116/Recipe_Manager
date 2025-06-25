@@ -1,0 +1,64 @@
+[[extend 'layout.html']]
+
+<div class="section">
+  <div class="container">
+    <h2 class="title is-4">[[=recipe.name]] - Reviews</h2>
+
+    <!-- Review List -->
+    [[for r in reviews:]]
+      <div class="box">
+        <p>
+          <strong>[[=r.auth_user.first_name]]</strong>
+          <small class="has-text-grey"> at [[=r.review.timestamp]]</small>
+        </p>
+        <p>[[=r.review.content]]</p>
+      </div>
+    [[pass]]
+
+    <!-- Add Review Form -->
+    <div class="box">
+      <h3 class="title is-5">Add Review</h3>
+      <form id="review-form">
+        <div class="field">
+          <div class="control">
+            <textarea class="textarea" id="review-content" placeholder="Write your review..."></textarea>
+          </div>
+        </div>
+        <div class="field">
+          <div class="control">
+            <button class="button is-primary" type="submit">Submit</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById("review-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const content = document.getElementById("review-content").value.trim();
+    if (!content) return alert("Review cannot be empty.");
+
+    fetch("/Recipe_Manager/api/review", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        recipe_id: [[=recipe.id]],
+        content: content
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        location.reload(); // Reload the page to show the new review
+      } else {
+        alert("Error posting review: " + data.error);
+      }
+    })
+    .catch(err => {
+      console.error("Error:", err);
+      alert("Failed to post review.");
+    });
+  });
+</script>

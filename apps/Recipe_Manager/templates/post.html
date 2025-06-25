@@ -1,0 +1,173 @@
+[[extend 'layout.html']]
+
+<div class="section" id="post-page">
+  <div class="container">
+    <h1 class="title is-3 has-text-centered">Post New Recipe or Ingredient</h1>
+
+    <!-- Make the layout stack vertically on smaller screens and use more space -->
+    <div class="columns is-variable is-8 is-desktop mt-5">
+      <!-- Ingredient Form - Make it smaller since it has fewer fields -->
+      <div class="column is-5-desktop is-12-tablet">
+        <div class="box" style="height: fit-content;">
+          <h2 class="title is-4 mb-5">Add Ingredient</h2>
+          <form @submit.prevent="addIngredient">
+            <div class="field mb-4">
+              <label class="label">Name</label>
+              <input v-model="newIngredient.name" class="input" required />
+            </div>
+            <div class="field mb-4">
+              <label class="label">Unit</label>
+              <input v-model="newIngredient.unit" class="input" />
+            </div>
+            <div class="field mb-4">
+              <label class="label">Calories per Unit</label>
+              <input v-model.number="newIngredient.calories_per_unit" type="number" class="input" required />
+            </div>
+            <div class="field mb-4">
+              <label class="label">Description</label>
+              <textarea v-model="newIngredient.description" class="textarea" rows="3"></textarea>
+            </div>
+            <div class="field mb-4">
+              <button class="button is-link is-fullwidth" type="submit">Add Ingredient</button>
+            </div>
+            <p v-if="ingredientError" class="help is-danger">{{ ingredientError }}</p>
+          </form>
+        </div>
+      </div>
+
+      <!-- Recipe Form - Make it larger since it has more content -->
+      <div class="column is-7-desktop is-12-tablet">
+        <div class="box">
+          <h2 class="title is-4 mb-5">Add Recipe</h2>
+          <form @submit.prevent="addRecipe">
+            <div class="field mb-4">
+              <label class="label">Name</label>
+              <input v-model="newRecipe.name" class="input" required />
+            </div>
+            <div class="field mb-4">
+              <label class="label">Type</label>
+              <input v-model="newRecipe.type" class="input" />
+            </div>
+            <div class="field mb-4">
+              <label class="label">Description</label>
+              <textarea v-model="newRecipe.description" class="textarea" rows="3"></textarea>
+            </div>
+            <div class="field mb-4">
+              <label class="label">Instruction Steps</label>
+              <textarea v-model="newRecipe.instruction_steps" class="textarea" rows="4"></textarea>
+            </div>
+            <div class="field mb-4">
+              <label class="label">Recipe Image</label>
+              <input class="input" type="file" @change="uploadImage">
+            </div>
+
+            <div class="field mb-5">
+              <label class="label">Servings</label>
+              <input v-model.number="newRecipe.servings" type="number" class="input" min="1" style="max-width: 200px;" />
+            </div>
+            
+            <!-- Ingredient Selection with Dropdown -->
+            <div class="field mb-5">
+              <label class="label mb-3">Add Ingredients</label>
+              <div v-if="allIngredients.length > 0">
+                <div class="field has-addons mb-4">
+                  <div class="control is-expanded">
+                    <div class="select is-fullwidth">
+                      <select v-model="selectedIngredientId">
+                        <option value="">Select an ingredient...</option>
+                        <option 
+                          v-for="ing in availableIngredients" 
+                          :key="ing.id" 
+                          :value="ing.id"
+                        >
+                          {{ ing.name }} ({{ ing.calories_per_unit }} cal/{{ ing.unit }})
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="control">
+                    <input 
+                      v-model.number="ingredientQuantity" 
+                      class="input" 
+                      type="number" 
+                      step="0.01" 
+                      min="0.01"
+                      placeholder="Quantity"
+                      style="width: 120px;"
+                    />
+                  </div>
+                  <div class="control">
+                    <button 
+                      @click="addIngredientToRecipe" 
+                      class="button is-info" 
+                      type="button"
+                      :disabled="!selectedIngredientId || !ingredientQuantity"
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div v-else class="notification is-light">Loading ingredients…</div>
+            </div>
+
+            <!-- Selected Ingredients List -->
+            <div class="field mb-5" v-if="selectedIngredients.length > 0">
+              <label class="label mb-3">Selected Ingredients</label>
+              <div class="box p-4" style="background-color: #f8f9fa; border: 1px solid #e9ecef;">
+                <div 
+                  v-for="(sel, index) in selectedIngredients" 
+                  :key="sel.ingredient_id"
+                  class="level is-mobile mb-3 p-3"
+                  style="background-color: white; border-radius: 6px; border: 1px solid #dee2e6;"
+                >
+                  <div class="level-left">
+                    <div class="level-item">
+                      <div>
+                        <p class="has-text-weight-semibold">{{ getIngredientName(sel.ingredient_id) }}</p>
+                        <p class="is-size-7 has-text-grey">
+                          {{ sel.quantity_per_serving }} {{ getIngredientUnit(sel.ingredient_id) }} 
+                          • {{ (getIngredientCalories(sel.ingredient_id) * sel.quantity_per_serving).toFixed(1) }} calories
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="level-right">
+                    <div class="level-item">
+                      <button 
+                        @click="removeIngredientFromRecipe(index)" 
+                        class="button is-small is-danger is-outlined"
+                        type="button"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="box mb-5 p-4" style="background-color: #e8f5e8; border: 1px solid #28a745;">
+              <p class="has-text-weight-bold is-size-5 has-text-success">
+                Total calories per serving: {{ totalCalories }}
+              </p>
+            </div>
+            
+            <div class="field">
+              <button class="button is-link is-fullwidth is-medium" type="submit">Add Recipe</button>
+            </div>
+            <p v-if="recipeError" class="help is-danger mt-3">{{ recipeError }}</p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+<script>
+  window.api_ingredients = "[[=URL('api/ingredients')]]";
+  window.api_recipes = "[[=URL('api/recipes')]]";
+  window.user_id = [[=auth.user_id or 'null']];
+</script>
+<script src="/Recipe_Manager/static/js/post.js?v=[[=timestamp]]" defer></script>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+  <style>
+    ul1 {text-align: center;}
+  </style>
+  <head>
+    <base href="[[=URL('static')]]/">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" href="data:image/x-icon;base64,AAABAAEAAQEAAAEAIAAwAAAAFgAAACgAAAABAAAAAgAAAAEAIAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAPAAAAAA=="/>
+    
+    <!-- Custom styles and theme -->
+    <link rel="stylesheet" href="css/no.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.3/css/bulma.min.css">
+
+    <style>
+      body {
+        background-color: #f5f7fa !important;
+        font-family: 'Segoe UI', Roboto, sans-serif;
+      }
+
+      main.padded {
+        padding: 2rem;
+      }
+
+      .py4web-validation-error {
+        margin-top: -16px;
+        font-size: 0.8em;
+        color: red;
+      }
+
+      .grid-table-wrapper {
+        overflow-x: auto;
+      }
+
+      .card, .box {
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05); /* soft elevation */
+      }
+
+      nav.black {
+        background-color: #343a40;
+        padding: 1rem;
+        color: white;
+      }
+
+      nav.black a {
+        color: white;
+        font-weight: bold;
+        margin-right: 1rem;
+      }
+
+      nav.black ul {
+        display: inline-block;
+        margin: 0 1rem;
+      }
+
+      nav.black label,
+      nav.black input[type="checkbox"] {
+        display: none; /* hide mobile hamburger for now */
+      }
+
+      footer.black {
+        background-color: #343a40;
+        color: white;
+        text-align: center;
+        padding: 1.5rem 1rem;
+        margin-top: 3rem;
+      }
+    </style>
+    
+    <style>
+  .checkbox input {
+    transform: scale(1.2);
+    margin-right: 0.5em;
+  }
+  li {
+    font-size: 1rem;
+  }
+</style>
+
+    [[block page_head]]<!-- individual pages can customize header here -->[[end]]
+  </head>
+
+  <body>
+    <header>
+      <!-- Navigation bar -->
+      <nav class="black">
+        <!-- Logo -->
+        <a href="[[=URL('index')]]">
+          <b>Recipe Manager</b>
+        </a>
+
+        <!-- Navigation links -->
+        <ul1>
+          <li><a href="[[=URL('index')]]">Home</a></li>
+          <li><a href="[[=URL('ingredients')]]">Ingredients</a></li>
+          <li><a href="[[=URL('recipe_page')]]">Recipes</a></li>
+          <li><a href="[[=URL('post')]]">Post</a></li>
+        </ul1>
+
+        <!-- Auth Section -->
+        <ul style="float: right;">
+          [[if globals().get('user'):]]
+          <li>
+            <a class="navbar-link is-primary">
+              [[=globals().get('user',{}).get('email')]]
+            </a>
+            <ul>
+              <li><a href="[[=URL('auth/profile')]]">Edit Profile</a></li>
+              <li><a href="[[=URL('auth/change_password')]]">Change Password</a></li>
+              <li><a href="[[=URL('auth/logout')]]">Logout</a></li>
+            </ul>
+          </li>
+          [[else:]]
+          <li>
+            Login
+            <ul>
+              <li><a href="[[=URL('auth/register')]]">Sign up</a></li>
+              <li><a href="[[=URL('auth/login')]]">Log in</a></li>
+            </ul>
+          </li>
+          [[pass]]
+        </ul>
+      </nav>
+    </header>
+
+    <!-- Main Content -->
+    <center>
+      <div>
+        <flash-alerts class="padded" data-alert="[[=globals().get('flash','')]]"></flash-alerts>
+      </div>
+      <main class="padded">
+        [[include]]
+      </main>
+    </center>
+
+    <!-- Footer -->
+    <footer class="black">
+      <p>Made with py4web</p>
+    </footer>
+
+    <!-- Utilities -->
+    <script src="js/utils.js"></script>
+    [[block page_scripts]]<!-- individual pages can add scripts here -->[[end]]
+  </body>
+</html>

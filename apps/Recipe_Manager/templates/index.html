@@ -1,0 +1,101 @@
+[[extend 'layout.html']]
+<style>
+  p1 {text-align: center;}
+</style>
+<div class="section" id="home-app">
+  <div class="container">
+
+    <!-- Welcome Banner -->
+    <section class="hero is-light mb-5">
+      <div class="hero-body">
+        <div class="container has-text-centered">
+          <h1 class="title is-2">Welcome to Recipe Manager</h1>
+          <p1 class="subtitle is-5 mt-2">
+            Manage your meals and ingredients with ease. Calculate nutrition and build your culinary knowledge!
+          </p1>
+          <a class="button is-primary is-medium mt-3" href="[[=URL('post')]]">
+            <span class="icon"><i class="fas fa-plus"></i></span>
+            <span>Post New Recipe or Ingredient</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Two Columns: Recipes Left, Ingredients Right -->
+    <div class="columns is-variable is-8">
+      <!-- Recipes Column -->
+      <div class="column">
+        <h2 class="title is-4 has-text-centered">Latest Recipes</h2>
+        <div v-if="recipes.length === 0" class="notification is-light">No recipes found.</div>
+
+        <div class="card mb-4" v-for="r in recipes.slice(0, 5)" :key="r.id">
+          <div class="card-content">
+            <p class="title is-5">{{ r.name }} <small class="has-text-grey">({{ r.type }})</small></p>
+            <p class="content">{{ r.description }}</p>
+            <p><strong>Servings:</strong> {{ r.servings }}</p>
+          </div>
+        </div>
+
+        <div class="has-text-centered mt-4">
+          <a class="button is-link is-small" href="[[=URL('recipe_page')]]">
+            <span class="icon"><i class="fas fa-book"></i></span>
+            <span>View All Recipes</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Ingredients Column -->
+      <div class="column">
+        <h2 class="title is-4 has-text-centered">Latest Ingredients</h2>
+        <div v-if="ingredients.length === 0" class="notification is-light">No ingredients found.</div>
+
+        <div class="card mb-4" v-for="i in ingredients.slice(0, 5)" :key="i.id">
+          <div class="card-content">
+            <p class="title is-5">{{ i.name }} <small class="has-text-grey">({{ i.unit }})</small></p>
+            <p class="content is-size-7">{{ i.description }}</p>
+            <p><strong>Calories:</strong> {{ i.calories_per_unit }} cal/unit</p>
+          </div>
+        </div>
+
+        <div class="has-text-centered mt-4">
+          <a class="button is-link is-small" href="[[=URL('ingredients')]]">
+            <span class="icon"><i class="fas fa-leaf"></i></span>
+            <span>View All Ingredients</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+<script>
+  new Vue({
+    el: "#home-app",
+    data: {
+      ingredients: [],
+      recipes: []
+    },
+    methods: {
+      loadIngredients() {
+        fetch("[[=URL('api/ingredients')]]")
+          .then(res => res.json())
+          .then(data => {
+            this.ingredients = data.ingredients;
+          });
+      },
+      loadRecipes() {
+        fetch("[[=URL('api/recipes')]]")
+          .then(res => res.json())
+          .then(data => {
+            this.recipes = data.recipes;
+          });
+      }
+    },
+    mounted() {
+      this.loadIngredients();
+      this.loadRecipes();
+    }
+  });
+</script>

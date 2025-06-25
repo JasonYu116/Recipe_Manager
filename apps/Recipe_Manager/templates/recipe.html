@@ -1,0 +1,280 @@
+[[extend 'layout.html']]
+<div class="section">
+  <div class="container" id="recipe-app">
+    <h2 class="title is-4">Recipes</h2>
+    <div class="field mb-4">
+      <div class="field">
+        <div class="select">
+          <select v-model="typeFilter">
+            <option value="">All Types</option>
+            <option>Breakfast</option>
+            <option>Lunch</option>
+            <option>Dinner</option>
+            <option>Dessert</option>
+            <option>Appetizer</option>
+            <option>Snack</option>
+          </select>
+        </div>
+      </div>
+      <input v-model="search" class="input" placeholder="Search recipes…" />
+    </div>
+    <div v-if="filteredRecipes.length === 0" class="notification is-light">
+      No recipes found.
+    </div>
+    
+    <!-- Enhanced Recipe Cards -->
+    <div class="box p-5 mb-5" v-for="r in filteredRecipes" :key="r.id" style="border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+      <div class="columns is-vcentered">
+        
+        <!-- Recipe Image Column -->
+        <div class="column is-narrow" v-if="r.imageUrl">
+          <a :href="`/Recipe_Manager/recipe/${r.id}/instructions`">
+            <figure class="image is-300x300">
+              <img :src="r.imageUrl" :alt="r.name"
+                style="width: 300px; height: 300px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            </figure>
+          </a>
+        </div>
+
+        <!-- Recipe Content Column -->
+        <div class="column">
+          <!-- Display Mode -->
+          <div v-if="editingRecipe !== r.id">
+            <!-- Recipe Header -->
+            <div class="mb-4">
+              <h3 class="title is-4 mb-2">
+                <a :href="`/Recipe_Manager/recipe/${r.id}/instructions`" class="has-text-dark">
+                  {{ r.name }}
+                </a>
+                <span class="tag is-info is-medium ml-3">{{ r.type }}</span>
+              </h3>
+              <p class="subtitle is-6 has-text-grey">{{ r.description }}</p>
+            </div>
+
+            <!-- Recipe Details -->
+            <div class="content mb-4">
+              <div class="columns is-mobile">
+                <div class="column is-narrow">
+                  <span class="icon-text">
+                    <span class="icon has-text-primary">
+                      <i class="fas fa-users"></i>
+                    </span>
+                    <span><strong>Servings:</strong> {{ r.servings }}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rating Section -->
+            <div class="box has-background-light p-4 mb-4">
+              <div class="level is-mobile">
+                <div class="level-left">
+                  <div class="level-item">
+                    <div>
+                      <p class="heading">Your Rating</p>
+                      <div class="is-flex is-align-items-center">
+                        <span v-for="n in 5" :key="n" class="icon is-small mr-1 is-clickable" @click="rateRecipe(r.id, n)">
+                          <i :class="n <= r.user_rating ? 'fas fa-star has-text-warning' : 'far fa-star'"></i>
+                        </span>
+                        <small class="has-text-grey ml-2">(click to rate)</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="level-right">
+                  <div class="level-item">
+                    <div class="has-text-centered">
+                      <p class="heading">Average Rating</p>
+                      <p class="title is-6">{{ r.avg_rating }}/5</p>
+                      <p class="is-size-7 has-text-grey">{{ r.rating_count }} rating(s)</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons Section -->
+            <div class="card">
+              <div class="card-content p-4">
+                <div class="field is-grouped is-grouped-multiline">
+                  <!-- Primary Actions -->
+                  <div class="control">
+                    <a class="button is-primary" :href="`/Recipe_Manager/recipe/${r.id}/instructions`">
+                      <span class="icon">
+                        <i class="fas fa-eye"></i>
+                      </span>
+                      <span>View Instructions</span>
+                    </a>
+                  </div>
+                  
+                  <div class="control">
+                    <button @click="editRecipe(r)" class="button is-warning">
+                      <span class="icon">
+                        <i class="fas fa-edit"></i>
+                      </span>
+                      <span>Modify</span>
+                    </button>
+                  </div>
+
+                  <div class="control">
+                    <button @click="copyRecipe(r)" class="button is-info">
+                      <span class="icon">
+                        <i class="fas fa-copy"></i>
+                      </span>
+                      <span>Copy</span>
+                    </button>
+                  </div>
+
+                  <div class="control">
+                    <a :href="`/Recipe_Manager/recipe/${r.id}/reviews`" class="button is-link">
+                      <span class="icon"><i class="fas fa-comment-dots"></i></span>
+                      <span>Review</span>
+                    </a>
+                  </div>
+                  
+
+                  <!-- Like/Dislike Actions -->
+                  <div class="control">
+                    <div class="field has-addons">
+                      <div class="control">
+                        <button @click="likeRecipe(r)" class="button is-success">
+                          <span class="icon">
+                            <i class="fas fa-thumbs-up"></i>
+                          </span>
+                          <span>{{ r.likes }}</span>
+                        </button>
+                      </div>
+                      <div class="control">
+                        <button @click="dislikeRecipe(r)" class="button is-danger">
+                          <span class="icon">
+                            <i class="fas fa-thumbs-down"></i>
+                          </span>
+                          <span>{{ r.dislikes }}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Delete Action -->
+                  <div class="control">
+                    <button @click="deleteRecipe(r.id)" class="button is-danger is-outlined">
+                      <span class="icon">
+                        <i class="fas fa-trash"></i>
+                      </span>
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Edit Mode -->
+          <div v-else>
+            <div class="card">
+              <div class="card-content">
+                <h4 class="title is-5 mb-4">Edit Recipe</h4>
+                
+                <div class="columns">
+                  <div class="column">
+                    <div class="field">
+                      <label class="label">Recipe Name</label>
+                      <div class="control">
+                        <input v-model="editForm.name" class="input" type="text" placeholder="Recipe name">
+                      </div>
+                    </div>
+                    
+                    <div class="field">
+                      <label class="label">Type</label>
+                      <div class="control">
+                        <div class="select is-fullwidth">
+                          <select v-model="editForm.type">
+                            <option value="Breakfast">Breakfast</option>
+                            <option value="Lunch">Lunch</option>
+                            <option value="Dinner">Dinner</option>
+                            <option value="Dessert">Dessert</option>
+                            <option value="Appetizer">Appetizer</option>
+                            <option value="Snack">Snack</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="field">
+                      <label class="label">Servings</label>
+                      <div class="control">
+                        <input v-model="editForm.servings" class="input" type="number" min="1" placeholder="Number of servings">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label class="label">Description</label>
+                  <div class="control">
+                    <textarea v-model="editForm.description" class="textarea" placeholder="Recipe description" rows="3"></textarea>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label class="label">Instructions</label>
+                  <div class="control">
+                    <textarea v-model="editForm.instruction_steps" class="textarea" placeholder="Step-by-step instructions" rows="6"></textarea>
+                  </div>
+                </div>
+
+                <div class="field is-grouped mt-5">
+                  <div class="control">
+                    <button @click="saveRecipe(r.id)" class="button is-success is-medium">
+                      <span class="icon">
+                        <i class="fas fa-save"></i>
+                      </span>
+                      <span>Save Changes</span>
+                    </button>
+                  </div>
+                  <div class="control">
+                    <button @click="cancelEdit" class="button is-light is-medium">
+                      <span class="icon">
+                        <i class="fas fa-times"></i>
+                      </span>
+                      <span>Cancel</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add New Recipe Button -->
+<div class="has-text-centered mt-6 mb-6">
+  <a class="button is-primary is-large" href="/Recipe_Manager/post">
+    <span class="icon">
+      <i class="fas fa-plus"></i>
+    </span>
+    <span>Add New Recipe</span>
+  </a>
+</div>
+
+<!-- Image Modal -->
+<div v-if="showImageModal" class="modal" :class="{'is-active': showImageModal}">
+  <div class="modal-background" @click="closeImageModal"></div>
+  <div class="modal-content">
+    <p class="image">
+      <img :src="currentModalImage" :alt="currentModalImageName"
+        style="max-width: 90vw; max-height: 90vh; object-fit: contain;">
+    </p>
+  </div>
+  <button class="modal-close is-large" @click="closeImageModal" aria-label="close"></button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+<script>
+  window.api_base = "[[=api_base]]";
+  window.user_id = [[=user_id if user_id is not None else 'null']]; 
+</script>
+<script src="/Recipe_Manager/static/js/recipe.js"></script>
